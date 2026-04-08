@@ -1,47 +1,43 @@
-pipeline {
-    agent any
+tools {
+    maven 'Maven-3'
+}
 
-    tools {
-        maven 'Maven-3'
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/your-org/your-repo.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                sh 'mvn package -DskipTests'
-            }
+stages {
+    stage('Checkout') {
+        steps {
+            git branch: 'main',
+                url: 'https://github.com/your-org/your-repo.git'
         }
     }
 
-    post {
-        success {
-            echo 'Build succeeded!'
-            archiveArtifacts artifacts: 'target/*.jar'
+    stage('Build') {
+        steps {
+            sh 'mvn clean compile'
         }
-        failure {
-            echo 'Build failed!'
+    }
+
+    stage('Test') {
+        steps {
+            sh 'mvn test'
         }
-        always {
-            echo 'Pipeline complete.'
+    }
+
+    stage('Package') {
+        steps {
+            sh 'mvn package -DskipTests'
         }
+    }
+}
+
+post {
+    success {
+        echo 'Build succeeded!'
+        archiveArtifacts artifacts: 'target/*.jar'
+    }
+    failure {
+        echo 'Build failed!'
+    }
+    always {
+        echo 'Pipeline complete.'
     }
 }
