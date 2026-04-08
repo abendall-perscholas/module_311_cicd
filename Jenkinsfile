@@ -26,6 +26,14 @@ pipeline {
             }
         }
 
+        stage('Code Quality') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    bat 'mvn sonar:sonar'
+                }
+            }
+        }
+
         stage('Package') {
             steps {
                 bat 'mvn package -DskipTests'
