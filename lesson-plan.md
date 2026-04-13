@@ -237,6 +237,33 @@ Build → Test → Static Analysis → Report
    Pass ✅ or Fail ❌ (notify developer)
 ```
 
+**CI Pipeline Diagram:**
+
+```mermaid
+flowchart TD
+    A[Developer Pushes Code] -->|git push| B[GitHub Repository]
+    B -->|Webhook triggers| C[Jenkins Pipeline]
+
+    C --> D[Build - mvn compile]
+    D --> E[Test - mvn test]
+    E --> F[SonarQube Code Scan]
+
+    F --> G{Quality Gate}
+    G -->|Pass| H[Package - mvn package]
+    G -->|Fail| I[Pipeline Stops - Notify Dev]
+
+    H --> J[Upload Artifact to Cloud]
+    J --> K[Stored in S3 / Nexus / Artifactory]
+
+    style A fill:#4CAF50,color:#fff
+    style B fill:#333,color:#fff
+    style C fill:#D32F2F,color:#fff
+    style F fill:#FF9800,color:#fff
+    style G fill:#FFC107,color:#000
+    style I fill:#f44336,color:#fff
+    style K fill:#2196F3,color:#fff
+```
+
 **Why CI?**
 - Catch integration issues early
 - Reduce "merge hell"
@@ -261,6 +288,56 @@ Deploy to staging (automated)
 Acceptance tests (automated)
         ↓
 Deploy to production (manual approval OR automatic)
+```
+
+**Deployment Pipeline Diagram:**
+
+```mermaid
+flowchart TD
+    A[CI Pipeline Complete] --> B[Retrieve Artifact from S3 / Nexus]
+
+    B --> C[Terraform / IaC - Provision Infrastructure]
+    C --> D[Deploy to AWS - EC2 / ECS / EKS]
+
+    D --> E[Liquibase - Run DB Migrations]
+    E --> F[Database Schema Updated]
+
+    F --> G[Smoke Tests & Health Checks]
+    G --> H{Healthy?}
+    H -->|Yes| I[Live in Production]
+    H -->|No| J[Rollback to Previous Version]
+
+    style A fill:#2196F3,color:#fff
+    style C fill:#7B1FA2,color:#fff
+    style D fill:#FF9800,color:#fff
+    style E fill:#00796B,color:#fff
+    style F fill:#455A64,color:#fff
+    style H fill:#FFC107,color:#000
+    style I fill:#4CAF50,color:#fff
+    style J fill:#f44336,color:#fff
+```
+
+**End-to-End: CI/CD Full Picture:**
+
+```mermaid
+flowchart TD
+    subgraph CI [Continuous Integration]
+        A[GitHub] -->|trigger| B[Build & Compile]
+        B --> C[Unit Tests]
+        C --> D[SonarQube Scan]
+        D --> E[Package & Store Artifact]
+    end
+
+    subgraph CD [Continuous Deployment]
+        F[Retrieve Artifact] --> G[Terraform - Deploy to AWS]
+        G --> H[Liquibase - DB Migrations]
+        H --> I[Verify & Go Live]
+    end
+
+    CI -->|Artifact in S3 / Nexus| CD
+
+    style CI fill:#E3F2FD,stroke:#1565C0,color:#000
+    style CD fill:#FFF3E0,stroke:#E65100,color:#000
 ```
 
 ### 3.4 Common CI/CD Tools (5 min)
